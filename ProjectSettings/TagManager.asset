@@ -14,8 +14,8 @@ TagManager:
   - UI
   - PlayerMovement
   - PostProcessing
-  - 
-  - 
+  - Projectile
+  - PlayerAttackLayer
   - 
   - 
   - 

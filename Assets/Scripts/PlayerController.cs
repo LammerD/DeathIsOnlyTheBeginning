@@ -13,12 +13,14 @@ public class PlayerController : MonoBehaviour
     
     private Vector2 _moveInput;
     private Rigidbody2D _rb2D;
+    private CircleCollider2D _cc2D;
     private Animator _animator;
 
     private List<RaycastHit2D> _castCollisions = new List<RaycastHit2D>();
     private void Start()
     {
         _rb2D = GetComponent<Rigidbody2D>();
+        _cc2D = GetComponent<CircleCollider2D>();
         _animator = GetComponent<Animator>();
     }
 
@@ -45,7 +47,7 @@ public class PlayerController : MonoBehaviour
 
     private bool TryMove(Vector2 direction)
     {
-        int count = _rb2D.Cast(direction, movementFilter, _castCollisions,
+        int count = _cc2D.Cast(direction, movementFilter, _castCollisions,
             moveSpeed * Time.fixedDeltaTime + collisionOffset);
         if (count == 0)
         {

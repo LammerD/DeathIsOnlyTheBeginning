@@ -117,7 +117,7 @@ GameObject:
   m_Component:
   - component: {fileID: 246774039}
   - component: {fileID: 246774040}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: LongSwordCollider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -152,7 +152,7 @@ BoxCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.0063239634, y: 0}
+  m_Offset: {x: 0.020804033, y: -0.0041371584}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -163,7 +163,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.15264791, y: 0.32}
+  m_Size: {x: 0.123687774, y: 0.27035403}
   m_EdgeRadius: 0
 --- !u!1 &960272196
 GameObject:
@@ -207,7 +207,7 @@ GameObject:
   m_Component:
   - component: {fileID: 962377650}
   - component: {fileID: 962377651}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: ShortSwordCollider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -270,8 +270,8 @@ GameObject:
   - component: {fileID: 6588740351846397249}
   - component: {fileID: 6588740351846397274}
   - component: {fileID: 6588740351846397276}
-  - component: {fileID: 227804027}
   - component: {fileID: 227804028}
+  - component: {fileID: 227804037}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -308,6 +308,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 2
+  collisionOffset: 0.02
+  movementFilter:
+    useTriggers: 0
+    useLayerMask: 1
+    useDepth: 0
+    useOutsideDepth: 0
+    useNormalAngle: 0
+    useOutsideNormalAngle: 0
+    layerMask:
+      serializedVersion: 2
+      m_Bits: 65
+    minDepth: 0
+    maxDepth: 0
+    minNormalAngle: 0
+    maxNormalAngle: 0
 --- !u!114 &6588740351846397272
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -320,9 +335,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cce7374fcdd40f5438005c2a1f53d531, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerMaxHealth: 0
-  playerCurrentHealth: 0
-  playerCanBeDamaged: 0
+  playerMaxHealth: 5
+  playerCurrentHealth: 5
+  playerCanBeDamaged: 1
 --- !u!114 &227804029
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -337,6 +352,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rotationRadiusAroundPlayer: 0.1
   _Sword: {fileID: 960272197}
+  potentialSwords:
+  - swordSprite: {fileID: 304944554, guid: acd89ed886e56c04d831404062f4c96d, type: 3}
+    swordDamage: 1
+    swordAnimationString: isAttackingShort
+  - swordSprite: {fileID: 1093043759, guid: 41411a665bb22b84eb81e19c5ac08ab5, type: 3}
+    swordDamage: 2
+    swordAnimationString: isAttackingLong
+  _currentSwordIndex: 1
 --- !u!212 &6588740351846397249
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -434,38 +457,12 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDrag: 0
   m_AngularDrag: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 0
   m_Material: {fileID: 0}
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
---- !u!61 &227804027
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6588740351846397248}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 0.16, y: 0.16}
-    newSize: {x: 0.16, y: 0.16}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  serializedVersion: 2
-  m_Size: {x: 0.16, y: 0.16}
-  m_EdgeRadius: 0
 --- !u!95 &227804028
 Animator:
   serializedVersion: 4
@@ -486,3 +483,19 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!58 &227804037
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6588740351846397248}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: -0.06}
+  serializedVersion: 2
+  m_Radius: 0.04

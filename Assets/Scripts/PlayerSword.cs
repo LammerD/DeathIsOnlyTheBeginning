@@ -99,8 +99,14 @@ public class PlayerSword : MonoBehaviour
     {
         if (other.CompareTag("Enemy"))
         {
+            Debug.Log("EnemyTriggEnter");
             other.GetComponent<BaseEnemy>().TakeDamage(potentialSwords[_currentSwordIndex].swordDamage);
             CineMachineShake.Instance.ShakeCamera(.2f,.25f);
         }
+    }
+
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        Debug.Log("EnemyTriggExit");
     }
 }
