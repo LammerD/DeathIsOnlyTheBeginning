@@ -6,12 +6,25 @@ using UnityEngine;
 public class ProjectileScript : MonoBehaviour
 {
     [SerializeField]private int damage;
+    [SerializeField] private bool playerProjectile;
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.gameObject.CompareTag("Player"))
+        if (!playerProjectile)
         {
-            other.gameObject.GetComponent<PlayerHealth>().TakeDamage(damage);
+            if (other.gameObject.CompareTag("Player"))
+            {
+                other.gameObject.GetComponent<PlayerHealth>().TakeDamage(damage);
+                Destroy(gameObject);
+            }
+        }else if (other.gameObject.CompareTag("Enemy"))
+        {
+            other.gameObject.GetComponent<BaseEnemy>().TakeDamage(damage);
+            Destroy(gameObject);
         }
-        Destroy(gameObject);
+        if (other.gameObject.CompareTag("Terrain"))
+        {
+            Destroy(gameObject);
+        }
+        
     }
 }

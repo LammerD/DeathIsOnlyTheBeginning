@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class PlayerHealth : MonoBehaviour
@@ -19,7 +20,49 @@ public class PlayerHealth : MonoBehaviour
     void Start()
     {
         _spriteRenderer = GetComponent<SpriteRenderer>();
-        for(int i =0 ; i < hearts.Count;i++)
+        UpdateMaxHealth();
+    }
+
+
+
+    public void TakeDamage(int damageAmount)
+    {
+        if (playerCanBeDamaged)
+        {
+            CineMachineShake.Instance.ShakeCamera(.2f,.25f);
+            playerCanBeDamaged = false;
+            playerCurrentHealth -= damageAmount;
+            UpdateHealthImage();
+            if (playerCurrentHealth <= 0)
+            {
+                GetComponent<Animator>().SetTrigger("isDead");
+                GetComponent<PlayerController>().enabled = false;
+                transform.GetChild(0).gameObject.SetActive(false);
+                StartCoroutine(WaitForDeathAnimation());
+                return;
+            }
+            StartCoroutine(iFrames());
+        }
+    }
+    public void Heal()
+    {
+        playerCurrentHealth += 1;
+        UpdateHealthImage();
+    }
+    public void GainMaxHealth()
+    {
+        playerMaxHealth += 1;
+        if (playerMaxHealth > playerCurrentHealth)
+        {
+            playerCurrentHealth += 1; 
+        }
+        UpdateMaxHealth();
+        UpdateHealthImage();
+    }
+    
+    private void UpdateMaxHealth()
+    {
+        for (int i = 0; i < hearts.Count; i++)
         {
             if (i < playerMaxHealth)
             {
@@ -31,22 +74,6 @@ public class PlayerHealth : MonoBehaviour
             }
         }
     }
-
-    public void TakeDamage(int damageAmount)
-    {
-        if (playerCanBeDamaged)
-        {
-            StartCoroutine(iFrames());
-            playerCurrentHealth -= damageAmount;
-            UpdateHealthImage();
-        }
-    }
-    public void Heal()
-    {
-        playerCurrentHealth += 1;
-        UpdateHealthImage();
-    }
-
     private void UpdateHealthImage()
     {
         for (int i = 0; i < hearts.Count; i++)
@@ -64,7 +91,6 @@ public class PlayerHealth : MonoBehaviour
 
     private IEnumerator iFrames()
     {
-        playerCanBeDamaged = false;
         //Makes sprite flash, need solution to do this without magic number but don't know how at the moment.
         for(int i = 0; i < 5;i++)
         {
@@ -74,5 +100,11 @@ public class PlayerHealth : MonoBehaviour
             yield return new WaitForSeconds (.1f);
         }
         playerCanBeDamaged = true;
+    }
+
+    private IEnumerator WaitForDeathAnimation()
+    {
+        yield return new WaitForSeconds(1.5f);
+        MenuHandler.Instance.OpenDeathMenu();
     }
 }

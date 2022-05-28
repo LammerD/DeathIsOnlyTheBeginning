@@ -12,18 +12,21 @@ public class PlayerSword : MonoBehaviour
     [Serializable]
     public class Sword
     {
-        public Sprite swordSprite;
-        public int swordDamage;
         public String swordAnimationString;
+        public String swordAnimationIdleString;
     }
 
     public List<Sword> potentialSwords = new List<Sword>();
-    
+    public int playerDamage;
+    public float cooldownTime;
+
     private Transform _playerChar;
     private Animator _swordAnimator;
     private Camera _camera;
     private int _activeQuadrant;
     public int _currentSwordIndex;
+    private bool _isCooldown;
+    private bool _isFiring;
 
     void Start()
     {
@@ -32,6 +35,20 @@ public class PlayerSword : MonoBehaviour
         _swordAnimator = transform.GetChild(0).GetComponentInChildren<Animator>();
     }
     void Update() {
+        if (Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            _isFiring = true;
+        }
+
+        if (Mouse.current.leftButton.wasReleasedThisFrame)
+        {
+            _isFiring = false;
+        }
+
+        if (_isFiring)
+        {
+            Attack();
+        }
         Vector3 position = _playerChar.position;
         
         Vector3 charToMouseDir = 
@@ -87,26 +104,38 @@ public class PlayerSword : MonoBehaviour
             _Sword.localScale = newScale;
         }
     }
-    public void ChangeSword(int swordIndex)
+    public void LevelUpSword()
     {
-        _currentSwordIndex = swordIndex;
+        _currentSwordIndex++;
+        _swordAnimator.SetTrigger(potentialSwords[_currentSwordIndex].swordAnimationIdleString);
     }
-    private void OnFire()
+    // private void OnFire()
+    // {
+    //     if (!_isCooldown)
+    //     {
+    //         StartCoroutine(Cooldown());
+    //         _swordAnimator.SetTrigger(potentialSwords[_currentSwordIndex].swordAnimationString);  
+    //     }
+    // }
+    private void Attack()
     {
-        _swordAnimator.SetTrigger(potentialSwords[_currentSwordIndex].swordAnimationString);
+        if (!_isCooldown)
+        {
+            StartCoroutine(Cooldown());
+            _swordAnimator.SetTrigger(potentialSwords[_currentSwordIndex].swordAnimationString);  
+        }
+    }
+    private IEnumerator Cooldown()
+    {
+        _isCooldown = true;
+        yield return new WaitForSeconds(cooldownTime);
+        _isCooldown = false;
     }
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Enemy"))
         {
-            Debug.Log("EnemyTriggEnter");
-            other.GetComponent<BaseEnemy>().TakeDamage(potentialSwords[_currentSwordIndex].swordDamage);
-            CineMachineShake.Instance.ShakeCamera(.2f,.25f);
+            other.GetComponent<BaseEnemy>().TakeDamage(playerDamage);
         }
-    }
-
-    private void OnTriggerExit2D(Collider2D other)
-    {
-        Debug.Log("EnemyTriggExit");
     }
 }

@@ -21,8 +21,10 @@ public class EnemyMover : MonoBehaviour
 
     private void Update()
     {
-        _dir = (Vector2) _playerHealth.transform.position - (Vector2)transform.position;
-        _dir.Normalize();
+
+            _dir = (Vector2) _playerHealth.transform.position - (Vector2)transform.position;
+            _dir.Normalize();
+
     }
 
     private void FixedUpdate()

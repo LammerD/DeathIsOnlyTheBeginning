@@ -7,7 +7,7 @@ using UnityEngine.PlayerLoop;
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] private float moveSpeed = 1f;
+    public float moveSpeed = 1f;
     [SerializeField] private float collisionOffset = 0.05f;
     [SerializeField] private ContactFilter2D movementFilter;
     
