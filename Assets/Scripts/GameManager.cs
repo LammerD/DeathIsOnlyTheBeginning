@@ -21,6 +21,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private List<GameObject> tierFourRewards = new List<GameObject>();
     
     private int _enemiesInCurrentRoom;
+    private AudioSource _audioSource;
     private Room _currentRoom;
     void Start()
     {
@@ -43,6 +44,7 @@ public class GameManager : MonoBehaviour
         {
             blocker.SetActive(true);
         }
+        CineMachineShake.Instance.ShakeCamera(1,.2f);
         foreach (GrowthCircle growthCircle in growthCirclesInCurrentRoom)
         {
             Destroy(growthCircle);
@@ -57,6 +59,12 @@ public class GameManager : MonoBehaviour
                 i++;
             }
             _enemiesInCurrentRoom = i;
+        }else if (_currentRoom.roomType == Room.RoomTypes.BossRoom)
+        {
+            //Fix this shit jesus
+            FindObjectOfType<Boss>().GetComponent<Animator>().SetTrigger("isAppearing");
+            FindObjectOfType<AudioSource>().clip = currentRoom.bossMusic;
+            FindObjectOfType<AudioSource>().Play();
         }
     }
 
@@ -117,5 +125,16 @@ public class GameManager : MonoBehaviour
         {
             blocker.SetActive(false);
         }
+    }
+
+    public void BossDefeated()
+    {
+        StartCoroutine(WaitForSeconds());
+    }
+
+    IEnumerator WaitForSeconds()
+    {
+        yield return new WaitForSeconds(1.9f);
+        MenuHandler.Instance.OpenDeathMenu();
     }
 }

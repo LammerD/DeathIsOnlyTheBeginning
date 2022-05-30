@@ -7,16 +7,26 @@ public class PersistencyHandler : MonoBehaviour
     public static PersistencyHandler Instance { get; private set; }
     public List<Color> possibleColors = new List<Color>();
     public Color currentColor;
-    public int amountOfDeaths;
+    public bool isBluePlayer;
     
-    void Start()
+    void Awake()
     {
         Instance = this;
     }
 
-    // Update is called once per frame
-    void Update()
+    public void ChangePlayerColor()
     {
-        
+        //Changes from blueplayer to redplayer
+        if (isBluePlayer)
+        {
+            currentColor = possibleColors[0];
+            isBluePlayer = false;
+        }
+        //Changes from Red to blue
+        else
+        {
+            currentColor = possibleColors[1];
+            isBluePlayer = true;
+        }
     }
 }

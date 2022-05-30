@@ -8,12 +8,26 @@ public class GrowthCircle : MonoBehaviour
     public int countEnemiesDiedInCircle;
 
     private Vector3 _currentScaleTarget;
+    private Vector3 _ownBaseScale;
+    private bool _canGrow;
+    private float _growthDuration = 2f;
+    private float _elapsedTime;
+
+    private void Start()
+    {
+        _ownBaseScale = transform.localScale;
+        transform.localScale = new Vector3(0.01f,0.01f,1);
+        _currentScaleTarget = _ownBaseScale;
+    }
 
     private void Update()
     {
-        var localScale = transform.localScale;
-        localScale = Vector3.Lerp (localScale, _currentScaleTarget ,  countEnemiesDiedInCircle * Time.deltaTime);
-        transform.localScale = localScale;
+        if (_elapsedTime < _growthDuration)
+        {
+            _elapsedTime += Time.deltaTime;
+            float percentageComplete = _elapsedTime / _growthDuration;
+            transform.localScale = Vector3.Lerp (transform.localScale, _currentScaleTarget , Mathf.SmoothStep(0,1,percentageComplete));
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -66,8 +80,8 @@ public class GrowthCircle : MonoBehaviour
 
     private void UpdateTargetScale()
     {
-        var localScale = transform.localScale;
-        _currentScaleTarget = new Vector3(localScale.x + countEnemiesDiedInCircle * .1f,
-            localScale.y + countEnemiesDiedInCircle * .1f, 1);
+        _currentScaleTarget = new Vector3(_ownBaseScale.x + countEnemiesDiedInCircle * .1f,
+            _ownBaseScale.y + countEnemiesDiedInCircle * .1f, 1);
+        _elapsedTime = 0;
     }
 }
