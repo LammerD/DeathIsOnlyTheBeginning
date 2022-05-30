@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using Unity.Mathematics;
+using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
@@ -35,6 +36,12 @@ public class GameManager : MonoBehaviour
 
     //Weapon
     [SerializeField] private List<GameObject> tierFourRewards = new List<GameObject>();
+    public List<GameObject> startScreens;
+    [SerializeField] private AnimatorController blueBoss;
+    [SerializeField] private AnimatorOverrideController redBoss;
+    [SerializeField] private AnimatorController redPlayer;
+    [SerializeField] private AnimatorOverrideController bluePlayer;
+    public GameObject currentStartScreens;
 
     private int _enemiesInCurrentRoom;
     public enum toDoAfterText
@@ -59,8 +66,15 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         Instance = this;
-        PersistencyHandler.Instance.GrabReferences();
         StartCoroutine(FadeFromBlack());
+
+        currentStartScreens = !PersistencyHandler.Instance.isBluePlayer ? startScreens[0] : startScreens[1];
+        boss.GetComponent<Animator>().runtimeAnimatorController =
+            !PersistencyHandler.Instance.isBluePlayer ? blueBoss : redBoss;
+        player.GetComponent<Animator>().runtimeAnimatorController =
+            !PersistencyHandler.Instance.isBluePlayer ? redPlayer : bluePlayer;
+        currentStartScreens.SetActive(true);
+        fadeOut.color = new Color(0, 0, 0, 100);
     }
 
     public void EnemyDied()
@@ -270,22 +284,22 @@ public class GameManager : MonoBehaviour
 
         StartCoroutine(TextAppear(startText, toDoAfterText.openStartMenu));
     }
-    private IEnumerator FadeImageStartScreen()
-    {
-        for (float i = 0; i <= 1; i += Time.deltaTime) 
-        {
-            fadeOut.color = new Color(0, 0, 0, i);
-            yield return null;
-        }
-        PersistencyHandler.Instance.currentStartImage.SetActive(true);
-        for (float i = 1; i >= 0; i -= Time.deltaTime)
-        {
-            fadeOut.color = new Color(0, 0, 0, i);
-            yield return null;
-        }
-
-        StartCoroutine(TextAppear(startText, toDoAfterText.openStartMenu));
-    }
+    // private IEnumerator FadeImageStartScreen()
+    // {
+    //     for (float i = 0; i <= 1; i += Time.deltaTime) 
+    //     {
+    //         fadeOut.color = new Color(0, 0, 0, i);
+    //         yield return null;
+    //     }
+    //     PersistencyHandler.Instance.currentStartImage.SetActive(true);
+    //     for (float i = 1; i >= 0; i -= Time.deltaTime)
+    //     {
+    //         fadeOut.color = new Color(0, 0, 0, i);
+    //         yield return null;
+    //     }
+    //
+    //     StartCoroutine(TextAppear(startText, toDoAfterText.openStartMenu));
+    // }
     private IEnumerator FadeImagePlay()
     {
         for (float i = 0; i <= 1; i += Time.deltaTime) 
@@ -294,7 +308,7 @@ public class GameManager : MonoBehaviour
             yield return null;
         }
         textBox.SetActive(false);
-        PersistencyHandler.Instance.currentStartImage.SetActive(false);
+        currentStartScreens.SetActive(false);
         for (float i = 1; i >= 0; i -= Time.deltaTime)
         {
             fadeOut.color = new Color(0, 0, 0, i);
