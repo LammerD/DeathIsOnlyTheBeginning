@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Windows.WebCam;
 using Random = UnityEngine.Random;
 
 public class BossWalking : StateMachineBehaviour
@@ -44,12 +43,13 @@ public class BossWalking : StateMachineBehaviour
                     _baseBoss.canSpecialAttack = false;
                     _lastTriggerString = "isHeartAttacking";
                     animator.SetTrigger(_lastTriggerString);
-                    timeBetweenAttacks = 2f;
+                    timeBetweenAttacks -= 0.5f;
                 }else if (_baseBoss.canFistAttack)
                 {
                     _baseBoss.canFistAttack = false;
                     _lastTriggerString = "isFistAttacking";
                     animator.SetTrigger(_lastTriggerString);
+                    timeBetweenAttacks -= 0.5f;
                 }
                 else
                 {

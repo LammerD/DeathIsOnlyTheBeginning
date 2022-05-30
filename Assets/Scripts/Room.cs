@@ -9,20 +9,32 @@ public class Room : MonoBehaviour
     public enum RoomTypes
     {
        NormalRoom,
-       BossRoom
+       BossRoom,
+       BossDoor,
+       TutorialRoom
     }
 
     public RoomTypes roomType;
     public List<GameObject> enemiesInRoom = new List<GameObject>();
     public List<GameObject> blockers = new List<GameObject>();
-    public AudioClip bossMusic;
 
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Player"))
         {
-            GameManager.Instance.EnterNewRoom(this);
-            GetComponent<BoxCollider2D>().enabled = false;
+            if (roomType == RoomTypes.BossDoor)
+            {
+                if (other.GetComponent<PlayerController>().hasKey)
+                {
+                    blockers[0].SetActive(false);
+                    GetComponent<BoxCollider2D>().enabled = false;
+                }
+            }
+            else
+            {
+                GameManager.Instance.EnterNewRoom(this);
+                GetComponent<BoxCollider2D>().enabled = false;
+            }
         }
     }
 }

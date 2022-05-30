@@ -10,6 +10,7 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed = 1f;
     [SerializeField] private float collisionOffset = 0.05f;
     [SerializeField] private ContactFilter2D movementFilter;
+    public bool hasKey;
     
     private Vector2 _moveInput;
     private Rigidbody2D _rb2D;

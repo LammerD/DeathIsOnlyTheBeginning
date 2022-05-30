@@ -2,30 +2,65 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
-    
+
     public List<GrowthCircle> growthCirclesInCurrentRoom = new List<GrowthCircle>();
+
+    [SerializeField] private GameObject player;
+    [SerializeField] private GameObject boss;
+
+    [SerializeField] private GameObject textBox;
+    [SerializeField] private RawImage fadeOut;
+    [SerializeField] private List<string> startText;
+    [SerializeField] private List<string> tutorialText;
+    [SerializeField] private List<string> winText;
+    [SerializeField] private List<string> loseText;
+
     //Just Health pickup
     [SerializeField] private GameObject tierOneReward;
+
     //Max Health or MoveSpeed
     [SerializeField] private List<GameObject> tierTwoRewards = new List<GameObject>();
+
     //Damage or AttackSpeed
     [SerializeField] private List<GameObject> tierThreeRewards = new List<GameObject>();
+
     //Weapon
     [SerializeField] private List<GameObject> tierFourRewards = new List<GameObject>();
-    
+
     private int _enemiesInCurrentRoom;
-    private AudioSource _audioSource;
+    public enum toDoAfterText
+    {
+        spawnTutorialEnemy,
+        reloadGame,
+        openStartMenu,
+        openDeathMenu,
+    }
     private Room _currentRoom;
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+            Destroy(this.gameObject);
+        else
+        {
+            Instance = this;
+        }
+    }
+
     void Start()
     {
         Instance = this;
+        PersistencyHandler.Instance.GrabReferences();
+        StartCoroutine(FadeFromBlack());
     }
 
     public void EnemyDied()
@@ -33,7 +68,10 @@ public class GameManager : MonoBehaviour
         _enemiesInCurrentRoom--;
         if (_enemiesInCurrentRoom <= 0)
         {
-            Invoke(nameof(AllEnemiesDied),.5f);
+            Invoke(nameof(AllEnemiesDied), .5f);
+        }else if (_currentRoom.roomType == Room.RoomTypes.TutorialRoom)
+        {
+            _currentRoom.enemiesInRoom[1].SetActive(true);
         }
     }
 
@@ -44,11 +82,13 @@ public class GameManager : MonoBehaviour
         {
             blocker.SetActive(true);
         }
-        CineMachineShake.Instance.ShakeCamera(1,.2f);
+
+        CineMachineShake.Instance.ShakeCamera(1, .2f);
         foreach (GrowthCircle growthCircle in growthCirclesInCurrentRoom)
         {
             Destroy(growthCircle);
         }
+
         growthCirclesInCurrentRoom = new List<GrowthCircle>();
         if (currentRoom.roomType == Room.RoomTypes.NormalRoom)
         {
@@ -58,13 +98,21 @@ public class GameManager : MonoBehaviour
                 baseEnemy.SetActive(true);
                 i++;
             }
+
             _enemiesInCurrentRoom = i;
-        }else if (_currentRoom.roomType == Room.RoomTypes.BossRoom)
+        }
+        else if (_currentRoom.roomType == Room.RoomTypes.BossRoom)
         {
-            //Fix this shit jesus
-            FindObjectOfType<Boss>().GetComponent<Animator>().SetTrigger("isAppearing");
-            FindObjectOfType<AudioSource>().clip = currentRoom.bossMusic;
-            FindObjectOfType<AudioSource>().Play();
+            int bossHP = Mathf.Min(player.GetComponent<PlayerSword>().playerDamage * 20, 100);
+            boss.GetComponent<BaseEnemy>().maxHealth = bossHP;
+            boss.GetComponent<BaseEnemy>().health = bossHP;
+            StartCoroutine(boss.GetComponent<BaseEnemy>().UpdateMaxHealth());
+            boss.GetComponent<Animator>().SetTrigger("isAppearing");
+            MusicHandler.instance.PlayBossTrack();
+        }else if (_currentRoom.roomType == Room.RoomTypes.TutorialRoom)
+        {
+            StartCoroutine(TextAppear(tutorialText, toDoAfterText.spawnTutorialEnemy));
+            _enemiesInCurrentRoom = 2;
         }
     }
 
@@ -77,27 +125,37 @@ public class GameManager : MonoBehaviour
             {
                 case 0:
                     //HeartPickup;
-                    Instantiate(tierOneReward,growthCircle.transform.position,Quaternion.identity);
+                    Instantiate(tierOneReward, growthCircle.transform.position, Quaternion.identity);
                     break;
                 case 1:
                     //Speed or MaxHP;
-                    Instantiate(tierTwoRewards[Random.Range(0, tierTwoRewards.Count)], growthCircle.transform.position,Quaternion.identity);
+                    if (_currentRoom.roomType == Room.RoomTypes.TutorialRoom)
+                    {
+                        Instantiate(tierFourRewards[0], growthCircle.transform.position, Quaternion.identity);
+                        tierFourRewards.RemoveAt(0);
+                        break;
+                    }
+                    Instantiate(tierTwoRewards[Random.Range(0, tierTwoRewards.Count)], growthCircle.transform.position,
+                        Quaternion.identity);
                     break;
                 case 2:
                     //Damage or AttackSpeed;
-                    Instantiate(tierThreeRewards[Random.Range(0, tierThreeRewards.Count)], growthCircle.transform.position,Quaternion.identity);
+                    Instantiate(tierThreeRewards[Random.Range(0, tierThreeRewards.Count)],
+                        growthCircle.transform.position, Quaternion.identity);
                     break;
                 case 3:
                     //Weapon
                     if (tierFourRewards.Count != 0)
                     {
-                        Instantiate(tierFourRewards[0],growthCircle.transform.position,Quaternion.identity);
+                        Instantiate(tierFourRewards[0], growthCircle.transform.position, Quaternion.identity);
                         tierFourRewards.RemoveAt(0);
                     }
                     else
                     {
-                        Instantiate(tierThreeRewards[Random.Range(0, tierThreeRewards.Count)], growthCircle.transform.position,Quaternion.identity);
+                        Instantiate(tierThreeRewards[Random.Range(0, tierThreeRewards.Count)],
+                            growthCircle.transform.position, Quaternion.identity);
                     }
+
                     break;
                 case >=4:
                     //All the Loot!
@@ -107,16 +165,17 @@ public class GameManager : MonoBehaviour
                         Instantiate(tierFourRewards[0], growthCircle.transform.position, Quaternion.identity);
                         tierFourRewards.RemoveAt(0);
                     }
+
                     Instantiate(tierOneReward,
-                        position+(Vector3)(Vector2.one*0.2f), Quaternion.identity);
+                        position + (Vector3) (Vector2.one * 0.2f), Quaternion.identity);
                     Instantiate(tierTwoRewards[0],
-                        position+(Vector3)(Vector2.right*0.2f), Quaternion.identity);
+                        position + (Vector3) (Vector2.right * 0.2f), Quaternion.identity);
                     Instantiate(tierTwoRewards[1],
-                        position+(Vector3)(Vector2.left*0.2f), Quaternion.identity);
+                        position + (Vector3) (Vector2.left * 0.2f), Quaternion.identity);
                     Instantiate(tierThreeRewards[0],
-                        position+(Vector3)(Vector2.down*0.2f), Quaternion.identity);
+                        position + (Vector3) (Vector2.down * 0.2f), Quaternion.identity);
                     Instantiate(tierThreeRewards[1],
-                        position+(Vector3)(Vector2.up*0.2f), Quaternion.identity);
+                        position + (Vector3) (Vector2.up * 0.2f), Quaternion.identity);
                     break;
             }
         }
@@ -129,12 +188,117 @@ public class GameManager : MonoBehaviour
 
     public void BossDefeated()
     {
-        StartCoroutine(WaitForSeconds());
+        player.GetComponent<PlayerHealth>().TogglePlayerControl(false);
+        foreach (GameObject baseEnemy in _currentRoom.enemiesInRoom)
+        {
+            baseEnemy.SetActive(false);
+        }
+
+        MusicHandler.instance.PlayVictoryTrack();
+        PersistencyHandler.Instance.ChangePlayerColor();
+        StartCoroutine(WaitForBossDeath());
     }
 
-    IEnumerator WaitForSeconds()
+    IEnumerator WaitForBossDeath()
     {
-        yield return new WaitForSeconds(1.9f);
-        MenuHandler.Instance.OpenDeathMenu();
+        yield return new WaitForSeconds(2f);
+        StartCoroutine(TextAppear(winText, toDoAfterText.reloadGame));
+    }
+
+    public void PlayerDied()
+    {
+        StartCoroutine(TextAppear(loseText, toDoAfterText.reloadGame));
+    }
+
+    private IEnumerator TextAppear(List<string> texts,toDoAfterText todo)
+    {
+        textBox.SetActive(true);
+        foreach (string text in texts)
+        {
+            string currentText = "";
+            for (int i = 0; i < text.Length; i++)
+            {
+                currentText = text.Substring(0, i);
+                currentText += "<color=#00000000>" + text.Substring(i) + "</color>";
+                textBox.GetComponent<TextMeshProUGUI>().text = currentText;
+                yield return new WaitForSeconds(0.05f);
+            }
+            if (todo == toDoAfterText.openStartMenu)
+            {
+                MenuHandler.Instance.OpenStartMenu();
+            }
+            else
+            {
+                yield return new WaitForSeconds(1f);
+            }
+        }
+        switch (todo)
+        {
+            case toDoAfterText.spawnTutorialEnemy:
+                textBox.SetActive(false);
+                _currentRoom.enemiesInRoom[0].SetActive(true);
+                yield break;
+            case toDoAfterText.openDeathMenu:
+                MenuHandler.Instance.OpenDeathMenu();
+                yield break;
+            case toDoAfterText.reloadGame:
+                StartCoroutine(FadeToBlack());
+                yield break;
+        }
+    }
+
+    public void StartGame()
+    {
+        StartCoroutine(FadeImagePlay());
+    }
+    private IEnumerator FadeToBlack()
+    {
+        for (float i = 0; i <= 1; i += Time.deltaTime) 
+        {
+            fadeOut.color = new Color(0, 0, 0, i);
+            yield return null;
+        }
+        MenuHandler.Instance.ReloadGame();
+    }
+    private IEnumerator FadeFromBlack()
+    {
+        for (float i = 2; i >= 0; i -= Time.deltaTime)
+        {
+            fadeOut.color = new Color(0, 0, 0, i);
+            yield return null;
+        }
+
+        StartCoroutine(TextAppear(startText, toDoAfterText.openStartMenu));
+    }
+    private IEnumerator FadeImageStartScreen()
+    {
+        for (float i = 0; i <= 1; i += Time.deltaTime) 
+        {
+            fadeOut.color = new Color(0, 0, 0, i);
+            yield return null;
+        }
+        PersistencyHandler.Instance.currentStartImage.SetActive(true);
+        for (float i = 1; i >= 0; i -= Time.deltaTime)
+        {
+            fadeOut.color = new Color(0, 0, 0, i);
+            yield return null;
+        }
+
+        StartCoroutine(TextAppear(startText, toDoAfterText.openStartMenu));
+    }
+    private IEnumerator FadeImagePlay()
+    {
+        for (float i = 0; i <= 1; i += Time.deltaTime) 
+        {
+            fadeOut.color = new Color(0, 0, 0, i);
+            yield return null;
+        }
+        textBox.SetActive(false);
+        PersistencyHandler.Instance.currentStartImage.SetActive(false);
+        for (float i = 1; i >= 0; i -= Time.deltaTime)
+        {
+            fadeOut.color = new Color(0, 0, 0, i);
+            yield return null;
+        }
     }
 }

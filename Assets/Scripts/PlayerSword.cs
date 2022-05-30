@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Random = UnityEngine.Random;
 
 public class PlayerSword : MonoBehaviour
 {
@@ -17,6 +18,7 @@ public class PlayerSword : MonoBehaviour
     }
 
     public List<Sword> potentialSwords = new List<Sword>();
+    [SerializeField] private AudioSource _as;
     public int playerDamage;
     public float cooldownTime;
 
@@ -122,7 +124,9 @@ public class PlayerSword : MonoBehaviour
         if (!_isCooldown)
         {
             StartCoroutine(Cooldown());
-            _swordAnimator.SetTrigger(potentialSwords[_currentSwordIndex].swordAnimationString);  
+            _swordAnimator.SetTrigger(potentialSwords[_currentSwordIndex].swordAnimationString);
+            _as.pitch = Random.Range(0.8f, 1.2f);
+            _as.Play();
         }
     }
     private IEnumerator Cooldown()

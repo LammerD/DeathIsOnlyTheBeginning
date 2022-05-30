@@ -25,6 +25,7 @@ public class BaseEnemy : MonoBehaviour
     private bool _hasReachedHalfway;
     private bool _hasUsedFirstFist;
     private bool _hasUsedSecondFist;
+    private int _numberOfHitsTaken;
 
     private void Start()
     {
@@ -41,16 +42,17 @@ public class BaseEnemy : MonoBehaviour
             //Should not be so hard coded but oh well..
             if (isBoss)
             {
+                _numberOfHitsTaken++;
                 UpdateHealthImage();
-                if (health <= 15 && !_hasReachedHalfway)
+                if (_numberOfHitsTaken >= 10 && !_hasReachedHalfway)
                 {
                     _hasReachedHalfway = true;
                     canSpecialAttack = true;
-                }else if (health <= 20 && !_hasUsedFirstFist)
+                }else if (_numberOfHitsTaken >= 15 && !_hasUsedFirstFist)
                 {
                     _hasUsedFirstFist = true;
                     canFistAttack = true;
-                }else if (health <= 5 && !_hasUsedSecondFist)
+                }else if (_numberOfHitsTaken >= 5 && !_hasUsedSecondFist)
                 {
                     _hasUsedSecondFist = true;
                     canFistAttack = true;
@@ -61,6 +63,8 @@ public class BaseEnemy : MonoBehaviour
             {
                 if (isBoss)
                 {
+                    Instantiate(GrowthCirclePrefab, transform.position, quaternion.identity)
+                        .GetComponent<GrowthCircle>();
                     GameManager.Instance.BossDefeated();
                     GetComponent<Animator>().SetTrigger("isDead");
                 }
@@ -106,7 +110,24 @@ public class BaseEnemy : MonoBehaviour
         yield return new WaitForSeconds (.1f);
         _ownSR.color = _ownColor;
     }
-    private void UpdateHealthImage()
+    public IEnumerator UpdateMaxHealth()
+    {
+        float duration = (float)2 / maxHealth;
+        for (int i = 0; i < hearts.Count; i++)
+        {
+            if (i < maxHealth)
+            {
+                hearts[i].enabled = true;
+            }
+            else
+            {
+                hearts[i].enabled = false;
+            }
+
+            yield return new WaitForSeconds(duration);
+        }
+    }
+    public void UpdateHealthImage()
     {
         for (int i = 0; i < hearts.Count; i++)
         {

@@ -14,7 +14,8 @@ public class Reward : MonoBehaviour
         MaxHPBoost,
         AttackSpeedBoost,
         DamageBoost,
-        Weapon
+        Weapon,
+        Key
     }
 
     [SerializeField] private RewardType ownType;
@@ -66,6 +67,10 @@ public class Reward : MonoBehaviour
                     break;
                 case RewardType.Weapon:
                     playerSword.LevelUpSword();
+                    Destroy(gameObject);
+                    break;
+                case RewardType.Key:
+                    playerController.hasKey = true;
                     Destroy(gameObject);
                     break;
                 default:

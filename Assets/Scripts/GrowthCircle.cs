@@ -6,6 +6,7 @@ using UnityEngine;
 public class GrowthCircle : MonoBehaviour
 {
     public int countEnemiesDiedInCircle;
+    public bool isBossCircle;
 
     private Vector3 _currentScaleTarget;
     private Vector3 _ownBaseScale;
@@ -22,7 +23,7 @@ public class GrowthCircle : MonoBehaviour
 
     private void Update()
     {
-        if (_elapsedTime < _growthDuration)
+        if (!isBossCircle && _elapsedTime < _growthDuration)
         {
             _elapsedTime += Time.deltaTime;
             float percentageComplete = _elapsedTime / _growthDuration;
@@ -39,6 +40,14 @@ public class GrowthCircle : MonoBehaviour
         //Well this is just beautiful code right here...
         if (other.CompareTag("GrowthCircle"))
         {
+            if (other.GetComponent<GrowthCircle>().isBossCircle)
+            {
+                return;
+            }
+            if (isBossCircle)
+            {
+                Destroy(other.gameObject);
+            }
             if (other.GetComponent<GrowthCircle>().countEnemiesDiedInCircle > this.countEnemiesDiedInCircle)
             {
                 return;

@@ -101,7 +101,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 892f1b434eab3a8408bc20d3d81f57b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 1
+  damage: 3
   playerProjectile: 0
 --- !u!95 &7589275927029519395
 Animator:

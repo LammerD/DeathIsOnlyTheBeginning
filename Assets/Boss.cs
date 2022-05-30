@@ -1,11 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 
 public class Boss : MonoBehaviour
 {
+    [SerializeField] private String bossText;
+    [SerializeField] private GameObject bossTextBox;
     [SerializeField] private GameObject projectile;
     [SerializeField] private float shotSpeed;
     [SerializeField] private List<GameObject> boots = new List<GameObject>();
@@ -90,6 +93,10 @@ public class Boss : MonoBehaviour
             yield return new WaitForSeconds(0.5f);
         }
         _fistListCounter++;
+        if (_fistListCounter > 1)
+        {
+            _fistListCounter = 0;
+        }
     }
 
     // private void OnTriggerEnter2D(Collider2D other)
@@ -99,4 +106,21 @@ public class Boss : MonoBehaviour
     //         other.GetComponent<PlayerHealth>().TakeDamage(1);
     //     }
     // }
+    public IEnumerator textAppear()
+    {
+        bossTextBox.SetActive(true);
+        _playerHealth.TogglePlayerControl(false);
+        string currentText = "";
+        for (int i = 0; i < bossText.Length; i++)
+        {
+            currentText = bossText.Substring(0, i);
+            bossTextBox.GetComponent<TextMeshProUGUI>().text = currentText;
+            yield return new WaitForSeconds(0.07f);
+        }
+    }
+    public void TextOff()
+    {
+        _playerHealth.TogglePlayerControl(true);
+        bossTextBox.SetActive(false);
+    }
 }

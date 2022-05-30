@@ -36,14 +36,21 @@ public class PlayerHealth : MonoBehaviour
             if (playerCurrentHealth <= 0)
             {
                 GetComponent<Animator>().SetTrigger("isDead");
-                GetComponent<PlayerController>().enabled = false;
-                transform.GetChild(0).gameObject.SetActive(false);
+                TogglePlayerControl(false);
+                MusicHandler.instance.PlayGameOverTrack();
                 StartCoroutine(WaitForDeathAnimation());
                 return;
             }
             StartCoroutine(iFrames());
         }
     }
+
+    public void TogglePlayerControl(bool active)
+    {
+        GetComponent<PlayerController>().enabled = active;
+        transform.GetChild(0).gameObject.SetActive(active);
+    }
+
     public void Heal()
     {
         playerCurrentHealth += 1;
@@ -105,6 +112,6 @@ public class PlayerHealth : MonoBehaviour
     private IEnumerator WaitForDeathAnimation()
     {
         yield return new WaitForSeconds(1.5f);
-        MenuHandler.Instance.OpenDeathMenu();
+        GameManager.Instance.PlayerDied();
     }
 }
