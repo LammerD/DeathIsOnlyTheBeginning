@@ -56,8 +56,8 @@ public class MenuHandler : MonoBehaviour
     {
         #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
-        #else
-        Application.Quit();
+        #elif (UNITY_WEBGL)
+        Application.OpenURL("https://domenixius.itch.io/growth-circle");
         #endif
     }
 

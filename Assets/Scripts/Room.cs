@@ -15,6 +15,7 @@ public class Room : MonoBehaviour
     public RoomTypes roomType;
     public List<GameObject> enemiesInRoom = new List<GameObject>();
     public List<GameObject> blockers = new List<GameObject>();
+    public AudioClip bossMusic;
 
     private void OnTriggerEnter2D(Collider2D other)
     {
