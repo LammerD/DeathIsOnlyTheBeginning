@@ -37,7 +37,14 @@ public class BaseEnemy : MonoBehaviour
     {
         if (_enemyCanBeDamaged)
         {
-            StartCoroutine(iFrames());
+            if (isBoss)
+            {
+                StartCoroutine(iFramesBoss());
+            }
+            else
+            {
+                StartCoroutine(iFrames());
+            }
             health -= damageAmount;
             //Should not be so hard coded but oh well..
             if (isBoss)
@@ -63,8 +70,6 @@ public class BaseEnemy : MonoBehaviour
             {
                 if (isBoss)
                 {
-                    Instantiate(GrowthCirclePrefab, transform.position, quaternion.identity)
-                        .GetComponent<GrowthCircle>();
                     GameManager.Instance.BossDefeated();
                     GetComponent<Animator>().SetTrigger("isDead");
                 }
@@ -109,6 +114,18 @@ public class BaseEnemy : MonoBehaviour
         _ownSR.color = new Color (1f, 0f, 0f, 1f);
         yield return new WaitForSeconds (.1f);
         _ownSR.color = _ownColor;
+    }
+    private IEnumerator iFramesBoss()
+    {
+        _enemyCanBeDamaged = false;
+        for(int i = 0; i < 5;i++)
+        {
+            _ownSR.color = new Color (1f, 0f, 0f, 1f);
+            yield return new WaitForSeconds (.1f);
+            _ownSR.color = _ownColor;
+            yield return new WaitForSeconds (.1f);
+        }
+        _enemyCanBeDamaged = true;
     }
     public IEnumerator UpdateMaxHealth()
     {
